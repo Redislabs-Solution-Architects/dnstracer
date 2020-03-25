@@ -26,18 +26,13 @@ type checks struct {
 	EndpointStatus []bool
 }
 
-func dnsDialcf(ctx context.Context, network, address string) (net.Conn, error) {
-	d := net.Dialer{
-		Timeout: time.Millisecond * time.Duration(10000),
+func dnsDial(dnsServer string) func(context.Context, string, string) (net.Conn, error) {
+	return func(ctx context.Context, network, address string) (net.Conn, error) {
+		d := net.Dialer{
+			Timeout: time.Millisecond * time.Duration(10000),
+		}
+		return d.DialContext(ctx, "udp", dnsServer)
 	}
-	return d.DialContext(ctx, "udp", "1.1.1.1:53")
-}
-
-func dnsDialgoo(ctx context.Context, network, address string) (net.Conn, error) {
-	d := net.Dialer{
-		Timeout: time.Millisecond * time.Duration(10000),
-	}
-	return d.DialContext(ctx, "udp", "8.8.8.8:53")
 }
 
 func cleanNS(l []*net.NS) []string {
@@ -55,23 +50,19 @@ func main() {
 	flag.Parse()
 	cfResolv := &net.Resolver{
 		PreferGo: true,
-		Dial:     dnsDialcf,
+		Dial:     dnsDial("1.1.1.1:53"),
 	}
 	gooResolv := &net.Resolver{
 		PreferGo: true,
-		Dial:     dnsDialcf,
+		Dial:     dnsDial("8.8.8.8:53"),
 	}
 	localResolv := &net.Resolver{
 		PreferGo: true,
 	}
 
 	results := checks{}
-	var err error
 
-	results.CFlareA, err = cfResolv.LookupHost(context.Background(), *cluster)
-	if err != nil {
-		fmt.Println(err)
-	}
+	results.CFlareA, _ = cfResolv.LookupHost(context.Background(), *cluster)
 	results.GoogleA, _ = gooResolv.LookupHost(context.Background(), *cluster)
 	results.LocalA, _ = localResolv.LookupHost(context.Background(), *cluster)
 	cfns, _ := cfResolv.LookupNS(context.Background(), strings.Join(strings.Split(*cluster, ".")[1:], "."))
