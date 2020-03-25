@@ -12,18 +12,20 @@ import (
 )
 
 type checks struct {
-	LocalA         []string
-	GoogleA        []string
-	CFlareA        []string
-	LocalNS        []string
-	GoogleNS       []string
-	CFlareNS       []string
-	LocalGlue      []string
-	GoogleGlue     []string
-	CFlareGlue     []string
-	PublicMatchA   bool
-	LocalMatchA    bool
-	EndpointStatus []bool
+	LocalA          []string
+	GoogleA         []string
+	CFlareA         []string
+	LocalNS         []string
+	GoogleNS        []string
+	CFlareNS        []string
+	LocalGlue       []string
+	GoogleGlue      []string
+	CFlareGlue      []string
+	PublicMatchA    bool
+	LocalMatchA     bool
+	PublicMatchGlue bool
+	LocalMatchGlue  bool
+	EndpointStatus  []bool
 }
 
 func dnsDial(dnsServer string) func(context.Context, string, string) (net.Conn, error) {
@@ -77,6 +79,45 @@ func main() {
 	sort.Strings(results.GoogleA)
 	results.PublicMatchA = reflect.DeepEqual(results.CFlareA, results.GoogleA)
 	results.LocalMatchA = reflect.DeepEqual(results.CFlareA, results.LocalA)
+
+	// Resolve all of the Glue records locally
+	for _, glu := range results.LocalNS {
+		q, err := localResolv.LookupHost(context.Background(), glu)
+		if err != nil {
+			fmt.Println("ERR:", err)
+		}
+		for _, w := range q {
+			results.LocalGlue = append(results.LocalGlue, w)
+		}
+	}
+	sort.Strings(results.LocalGlue)
+
+	// Resolve all of the Glue records on Google
+	for _, glu := range results.GoogleNS {
+		q, err := gooResolv.LookupHost(context.Background(), glu)
+		if err != nil {
+			fmt.Println("ERR:", err)
+		}
+		for _, w := range q {
+			results.GoogleGlue = append(results.GoogleGlue, w)
+		}
+	}
+	sort.Strings(results.GoogleGlue)
+
+	// Resolve all of the Glue records on Cloudflare
+	for _, glu := range results.CFlareNS {
+		q, err := cfResolv.LookupHost(context.Background(), glu)
+		if err != nil {
+			fmt.Println("ERR:", err)
+		}
+		for _, w := range q {
+			results.CFlareGlue = append(results.CFlareGlue, w)
+		}
+	}
+	sort.Strings(results.CFlareGlue)
+
+	results.PublicMatchGlue = reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue)
+	results.LocalMatchGlue = reflect.DeepEqual(results.CFlareGlue, results.LocalGlue)
 
 	fmt.Printf("%+v\n", results)
 }
