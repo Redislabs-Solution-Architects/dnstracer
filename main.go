@@ -119,5 +119,20 @@ func main() {
 	results.PublicMatchGlue = reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue)
 	results.LocalMatchGlue = reflect.DeepEqual(results.CFlareGlue, results.LocalGlue)
 
+	if results.PublicMatchGlue && results.LocalMatchGlue {
+		for _, r := range results.LocalGlue {
+			w := &net.Resolver{
+				PreferGo: true,
+				Dial:     dnsDial(fmt.Sprintf("%s:53", r)),
+			}
+			_, err := w.LookupNS(context.Background(), strings.Join(strings.Split(*cluster, ".")[1:], "."))
+			if err == nil {
+				results.EndpointStatus = append(results.EndpointStatus, true)
+			} else {
+				results.EndpointStatus = append(results.EndpointStatus, false)
+			}
+		}
+	}
+
 	fmt.Printf("%+v\n", results)
 }
