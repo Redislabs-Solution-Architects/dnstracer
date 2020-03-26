@@ -2,6 +2,7 @@ package rules
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/Redislabs-Solution-Architects/dnstracer/collection"
 	"github.com/gookit/color"
@@ -23,6 +24,7 @@ func debugPrint(check string, result bool) {
 	}
 }
 
+// Check : Given the collected data return a Results Struct
 func Check(collection collection.Collection, dbg bool) Results {
 
 	results := Results{}
@@ -34,7 +36,10 @@ func Check(collection collection.Collection, dbg bool) Results {
 	   Check that there is more than 1 A record
 	*/
 
-	if collection.PublicMatchA && collection.LocalMatchA && len(collection.LocalA) > 0 {
+	collection.PublicMatchA = reflect.DeepEqual(collection.CFlareA, collection.GoogleA)
+	collection.LocalMatchA = reflect.DeepEqual(collection.CFlareA, collection.LocalA)
+
+	if collection.PublicMatchA && collection.LocalMatchA && len(collection.LocalA) > 0 && (len(collection.LocalA) == len(collection.CFlareA)) {
 		results.ResultA = true
 	} else {
 		results.ResultA = false
@@ -49,6 +54,8 @@ func Check(collection collection.Collection, dbg bool) Results {
 	   Check to make sure there are at least 1 NS server
 	*/
 
+	collection.PublicMatchNS = reflect.DeepEqual(collection.CFlareNS, collection.GoogleNS)
+	collection.LocalMatchNS = reflect.DeepEqual(collection.CFlareNS, collection.LocalNS)
 	if collection.PublicMatchNS && collection.LocalMatchNS && len(collection.LocalNS) > 0 {
 		results.ResultNS = true
 	} else {
@@ -62,6 +69,9 @@ func Check(collection collection.Collection, dbg bool) Results {
 	   Check to make sure the one of the public and the private Glue record servers match
 	   Check to make sure there the Glue record length matches the ns record length
 	*/
+
+	collection.PublicMatchGlue = reflect.DeepEqual(collection.CFlareGlue, collection.GoogleGlue)
+	collection.LocalMatchGlue = reflect.DeepEqual(collection.CFlareGlue, collection.LocalGlue)
 
 	if collection.PublicMatchGlue && collection.LocalMatchGlue && (len(collection.LocalNS) == len(collection.LocalGlue)) && len(collection.LocalNS) > 0 {
 		results.ResultGlue = true

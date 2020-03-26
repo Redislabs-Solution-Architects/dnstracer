@@ -28,7 +28,7 @@ var validCollection = collection.Collection{
 	EndpointStatus:  []bool{true, true, true},
 }
 
-/* TestCollection : just make sure the data structure initializes to false */
+// TestCollection : just make sure the data structure initializes to false
 func TestCollection(t *testing.T) {
 	a := collection.Collection{}
 	if a.PublicMatchA {
@@ -36,7 +36,7 @@ func TestCollection(t *testing.T) {
 	}
 }
 
-/* TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty */
+// TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty
 func TestRulesAgainstEmptyCollection(t *testing.T) {
 	a := collection.Collection{}
 	r := rules.Check(a, false)
@@ -50,7 +50,7 @@ func TestRulesAgainstEmptyCollection(t *testing.T) {
 	}
 }
 
-/* TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty */
+// TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty
 func TestRulesAgainstFullCollection(t *testing.T) {
 	r := rules.Check(validCollection, false)
 	e := rules.Results{ResultA: true, ResultNS: true, ResultGlue: true, ResultAccess: true}
@@ -58,6 +58,51 @@ func TestRulesAgainstFullCollection(t *testing.T) {
 		t.Log("Full valid collection works")
 	} else {
 		fmt.Printf("%+v\n", r)
+		t.Error("Full valid collection should return all True\n")
+	}
+}
+
+// TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty
+func TestRulesAgainstMissingARecord(t *testing.T) {
+	coll := validCollection
+	coll.LocalA = nil
+	r := rules.Check(coll, false)
+	e := rules.Results{ResultA: false, ResultNS: true, ResultGlue: true, ResultAccess: true}
+	if reflect.DeepEqual(e, r) {
+		t.Log("Missing A Record works")
+	} else {
+		fmt.Printf("Was      : %+v\n", r)
+		fmt.Printf("Should Be: %+v\n", e)
+		t.Error("Full valid collection should return all True\n")
+	}
+}
+
+// TestRulesAgainstExtraARecord : if we add an extra record we should fail
+func TestRulesAgainstExtraARecord(t *testing.T) {
+	coll := validCollection
+	coll.LocalA = []string{"1.1.1.1", "2.2.2.2", "4.4.4.4"}
+	r := rules.Check(coll, false)
+	e := rules.Results{ResultA: false, ResultNS: true, ResultGlue: true, ResultAccess: true}
+	if reflect.DeepEqual(e, r) {
+		t.Log("Extra A Record works")
+	} else {
+		fmt.Printf("Was      : %+v\n", r)
+		fmt.Printf("Should Be: %+v\n", e)
+		t.Error("Full valid collection should return all True\n")
+	}
+}
+
+// TestRulesAgainstMismatchARecord : if we have a different record we should fail
+func TestRulesAgainstMismatchARecord(t *testing.T) {
+	coll := validCollection
+	coll.LocalA = []string{"1.1.1.1", "4.4.4.4"}
+	r := rules.Check(coll, false)
+	e := rules.Results{ResultA: false, ResultNS: true, ResultGlue: true, ResultAccess: true}
+	if reflect.DeepEqual(e, r) {
+		t.Log("Extra A Record works")
+	} else {
+		fmt.Printf("Was      : %+v\n", r)
+		fmt.Printf("Should Be: %+v\n", e)
 		t.Error("Full valid collection should return all True\n")
 	}
 }

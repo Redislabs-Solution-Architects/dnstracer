@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -79,10 +78,6 @@ func Collect(cluster string) Collection {
 	sort.Strings(results.LocalA)
 	sort.Strings(results.CFlareA)
 	sort.Strings(results.GoogleA)
-	results.PublicMatchA = reflect.DeepEqual(results.CFlareA, results.GoogleA)
-	results.LocalMatchA = reflect.DeepEqual(results.CFlareA, results.LocalA)
-	results.PublicMatchNS = reflect.DeepEqual(results.CFlareNS, results.GoogleNS)
-	results.LocalMatchNS = reflect.DeepEqual(results.CFlareNS, results.LocalNS)
 
 	// Resolve all of the Glue records locally
 	for _, glu := range results.LocalNS {
@@ -119,9 +114,6 @@ func Collect(cluster string) Collection {
 		}
 	}
 	sort.Strings(results.CFlareGlue)
-
-	results.PublicMatchGlue = reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue)
-	results.LocalMatchGlue = reflect.DeepEqual(results.CFlareGlue, results.LocalGlue)
 
 	if results.PublicMatchGlue && results.LocalMatchGlue {
 		for _, r := range results.LocalGlue {
