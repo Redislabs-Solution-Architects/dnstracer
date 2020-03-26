@@ -15,6 +15,6 @@ func main() {
 
 	coll := collection.Collect(*cluster)
 	results := rules.Check(coll, *dbg)
-	fmt.Println(coll)
-	fmt.Println(results)
+	fmt.Printf("%+v\n", coll)
+	fmt.Printf("%+v\n", results)
 }
