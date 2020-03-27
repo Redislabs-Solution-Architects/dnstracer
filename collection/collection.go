@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -115,7 +116,8 @@ func Collect(cluster string) *Collection {
 	}
 	sort.Strings(results.CFlareGlue)
 
-	if results.PublicMatchGlue && results.LocalMatchGlue {
+	// Ensure we can dig against all the NS
+	if reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue) && reflect.DeepEqual(results.CFlareGlue, results.LocalGlue) {
 		for _, r := range results.LocalGlue {
 			w := &net.Resolver{
 				PreferGo: true,
@@ -128,6 +130,8 @@ func Collect(cluster string) *Collection {
 				results.EndpointStatus = append(results.EndpointStatus, false)
 			}
 		}
+	} else {
+		fmt.Println("WTF?")
 	}
 
 	return (results)
