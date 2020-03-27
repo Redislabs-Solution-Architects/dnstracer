@@ -25,7 +25,7 @@ func debugPrint(check string, result bool) {
 }
 
 // Check : Given the collected data return a Results Struct
-func Check(collection collection.Collection, dbg bool) Results {
+func Check(collection *collection.Collection, dbg bool) Results {
 
 	results := Results{}
 

@@ -49,7 +49,7 @@ func cleanNS(l []*net.NS) []string {
 }
 
 // Collect : grab all of the necessary information needed to make decisions
-func Collect(cluster string) Collection {
+func Collect(cluster string) *Collection {
 
 	cfResolv := &net.Resolver{
 		PreferGo: true,
@@ -63,7 +63,7 @@ func Collect(cluster string) Collection {
 		PreferGo: true,
 	}
 
-	results := Collection{}
+	results := &Collection{}
 
 	results.CFlareA, _ = cfResolv.LookupHost(context.Background(), cluster)
 	results.GoogleA, _ = gooResolv.LookupHost(context.Background(), cluster)
