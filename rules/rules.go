@@ -31,24 +31,6 @@ func Check(collection *collection.Collection, dbg bool) Results {
 
 	// Start tests
 
-	/* Check to make sure both public DNS server results match
-	   Check that the LocalDNS and one of the remotes match
-	   Check that there is more than 1 A record
-	*/
-
-	collection.PublicMatchA = reflect.DeepEqual(collection.CFlareA, collection.GoogleA)
-	collection.LocalMatchA = reflect.DeepEqual(collection.CFlareA, collection.LocalA)
-
-	if collection.PublicMatchA && collection.LocalMatchA && len(collection.LocalA) > 0 && (len(collection.LocalA) == len(collection.CFlareA)) {
-		results.ResultA = true
-	} else {
-		results.ResultA = false
-	}
-	if dbg {
-		fmt.Printf("--------------------------------\n")
-		debugPrint("A Record Test", results.ResultA)
-	}
-
 	/* Check to make sure that the public DNS server NS records match
 	   Check to make sure the one of the public and the private NS record servers match
 	   Check to make sure there are at least 1 NS server
@@ -60,9 +42,6 @@ func Check(collection *collection.Collection, dbg bool) Results {
 		results.ResultNS = true
 	} else {
 		results.ResultNS = false
-	}
-	if dbg {
-		debugPrint("NS Record Test", results.ResultNS)
 	}
 
 	/* Check to make sure the public DNS server Glue records match
@@ -78,9 +57,6 @@ func Check(collection *collection.Collection, dbg bool) Results {
 	} else {
 		results.ResultGlue = false
 	}
-	if dbg {
-		debugPrint("Glue Record Test", results.ResultGlue)
-	}
 
 	/* Check to make sure that we can access all of the name servers and the numbers match */
 
@@ -95,12 +71,27 @@ func Check(collection *collection.Collection, dbg bool) Results {
 		results.ResultAccess = false
 	}
 
-	if dbg {
-		debugPrint("NS Access Test", results.ResultAccess)
-	}
+	/* Check to make sure both public DNS server results match
+	   Check that the LocalDNS and one of the remotes match
+	   Check that there is more than 1 A record
+	*/
 
+	collection.PublicMatchA = reflect.DeepEqual(collection.CFlareA, collection.GoogleA)
+	collection.LocalMatchA = reflect.DeepEqual(collection.CFlareA, collection.LocalA)
+
+	if collection.PublicMatchA && collection.LocalMatchA && len(collection.LocalA) > 0 && (len(collection.LocalA) == len(collection.CFlareA)) {
+		results.ResultA = true
+	} else {
+		results.ResultA = false
+	}
 	if dbg {
-		color.Cyan.Printf("--------------------------------\nResults Debug:\n%+v\n", results)
+		fmt.Printf("--------------------------------\n")
+		debugPrint("NS Record Test", results.ResultNS)
+		debugPrint("Glue Record Test", results.ResultGlue)
+		debugPrint("NS Access Test", results.ResultAccess)
+		debugPrint("A Record Test", results.ResultA)
+		fmt.Printf("--------------------------------\n")
+		color.Cyan.Printf("Results Debug:\n%+v\n", results)
 	}
 
 	return (results)
