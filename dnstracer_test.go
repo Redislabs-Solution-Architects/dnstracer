@@ -62,7 +62,9 @@ func TestRulesAgainstFullCollection(t *testing.T) {
 	}
 }
 
-// TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty
+// ---------------------------------- A RECORD TESTS ------------------------------------------
+
+// TestRulesAgainstMissingARecord : everything should return false if the Collection is empty
 func TestRulesAgainstMissingARecord(t *testing.T) {
 	coll := validCollection
 	coll.LocalA = nil
@@ -100,6 +102,53 @@ func TestRulesAgainstMismatchARecord(t *testing.T) {
 	e := rules.Results{ResultA: false, ResultNS: true, ResultGlue: true, ResultAccess: true}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Extra A Record works")
+	} else {
+		fmt.Printf("Was      : %+v\n", r)
+		fmt.Printf("Should Be: %+v\n", e)
+		t.Error("Full valid collection should return all True\n")
+	}
+}
+
+// ---------------------------------- NS RECORD TESTS ------------------------------------------
+
+// TestRulesAgainstMissingNSRecord : everything should return false if the Collection is empty
+func TestRulesAgainstMissingNSRecord(t *testing.T) {
+	coll := validCollection
+	coll.LocalNS = nil
+	r := rules.Check(coll, false)
+	e := rules.Results{ResultA: true, ResultNS: false, ResultGlue: false, ResultAccess: false}
+	if reflect.DeepEqual(e, r) {
+		t.Log("Missing NS Record works")
+	} else {
+		fmt.Printf("Was      : %+v\n", r)
+		fmt.Printf("Should Be: %+v\n", e)
+		t.Error("Full valid collection should return all True\n")
+	}
+}
+
+// TestRulesAgainstExtraNSRecord : if we add an extra record we should fail
+func TestRulesAgainstExtraNSRecord(t *testing.T) {
+	coll := validCollection
+	coll.LocalNS = append(coll.LocalNS, "ns4.example.com")
+	r := rules.Check(coll, false)
+	e := rules.Results{ResultA: true, ResultNS: false, ResultGlue: false, ResultAccess: false}
+	if reflect.DeepEqual(e, r) {
+		t.Log("Extra NS Record works")
+	} else {
+		fmt.Printf("Was      : %+v\n", r)
+		fmt.Printf("Should Be: %+v\n", e)
+		t.Error("Full valid collection should return all True\n")
+	}
+}
+
+// TestRulesAgainstMismatchNSRecord : if we have a different record we should fail
+func TestRulesAgainstMismatchNSRecord(t *testing.T) {
+	coll := validCollection
+	coll.LocalNS = []string{"ns1.example.com", "ns2.example.com"}
+	r := rules.Check(coll, false)
+	e := rules.Results{ResultA: true, ResultNS: false, ResultGlue: false, ResultAccess: false}
+	if reflect.DeepEqual(e, r) {
+		t.Log("Missing NS Record works")
 	} else {
 		fmt.Printf("Was      : %+v\n", r)
 		fmt.Printf("Should Be: %+v\n", e)
