@@ -18,11 +18,6 @@ func main() {
 	coll := collection.Collect(*cluster)
 	results := rules.Check(coll, *dbg)
 
-	//fmt.Println("FML")
-	//coll.LocalNS = []string{}
-	//coll.LocalMatchNS = false
-	//results.ResultNS = false
-
 	if *dbg {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("%+v\n", coll)
