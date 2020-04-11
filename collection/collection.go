@@ -34,7 +34,9 @@ type Collection struct {
 }
 
 // Stolen from https://gist.github.com/sajal/23798b930edd51cb925ef15c6b237f13
-func noDNSPropQuery(fqdn, nameserver string) (in *dns.Msg, err error) {
+func noDNSPropQuery(fqdn, nameserver string) ([]string, []string, error) {
+	glue := []string{}
+	ns := []string{}
 	if fqdn[len(fqdn)-1] != '.' {
 		fqdn = fqdn + "."
 	}
@@ -43,7 +45,7 @@ func noDNSPropQuery(fqdn, nameserver string) (in *dns.Msg, err error) {
 	m.SetEdns0(4096, false)
 	m.RecursionDesired = false
 	udp := &dns.Client{Net: "udp", Timeout: time.Millisecond * time.Duration(2500)}
-	in, _, err = udp.Exchange(m, nameserver)
+	in, _, err := udp.Exchange(m, nameserver)
 	if err != nil {
 		fmt.Println("TODO: Good error message goes here")
 	}
@@ -52,10 +54,11 @@ func noDNSPropQuery(fqdn, nameserver string) (in *dns.Msg, err error) {
 	for _, i := range in.Extra {
 		res := re.FindStringSubmatch(i.String())
 		if len(res) > 0 {
-			fmt.Println(res[1], res[2])
+			glue = append(glue, res[2])
+			ns = append(ns, res[1])
 		}
 	}
-	return
+	return ns, glue, err
 }
 
 func dnsDial(dnsServer string) func(context.Context, string, string) (net.Conn, error) {
@@ -115,29 +118,40 @@ func Collect(cluster string) *Collection {
 	goons, _ := gooResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	localns, lerr := localResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	if lerr != nil {
-		fmt.Println("ERR: Failback")
-		noDNSPropQuery(strings.Join(strings.Split(cluster, ".")[1:], "."), "127.0.0.1:53")
+		// TODO: figure out a good way to find the resolver based on various OS's but probably not Windows
+		x, y, _ := noDNSPropQuery(strings.Join(strings.Split(cluster, ".")[1:], "."), "127.0.0.1:53")
+		for _, n := range x {
+			results.LocalNS = append(results.LocalNS, n)
+		}
+		for _, n := range y {
+			results.LocalGlue = append(results.LocalGlue, n)
+		}
+	} else {
+		results.LocalNS = cleanNS(localns)
 	}
 
-	results.CFlareNS = cleanNS(cfns)
-	results.GoogleNS = cleanNS(goons)
-	results.LocalNS = cleanNS(localns)
-	results.CFlareA = cleanIPV6(cfa)
-	results.GoogleA = cleanIPV6(cfg)
-	results.LocalA = cleanIPV6(la)
-
-	// Resolve all of the Glue records locally
-	for _, glu := range results.LocalNS {
-		q, err := localResolv.LookupHost(context.Background(), glu)
-		if err != nil {
-			fmt.Println("ERR:", err)
-		}
-		q = cleanIPV6(q)
-		for _, w := range q {
-			results.LocalGlue = append(results.LocalGlue, w)
+	// Resolve all of the Glue records locally only if the slice is empty
+	// If we couldn't resolve the localns above we do the no recurstion trick
+	if len(results.LocalGlue) < 1 {
+		for _, glu := range results.LocalNS {
+			q, err := localResolv.LookupHost(context.Background(), glu)
+			if err != nil {
+				fmt.Println("ERR:", err)
+			}
+			q = cleanIPV6(q)
+			for _, w := range q {
+				results.LocalGlue = append(results.LocalGlue, w)
+			}
 		}
 	}
 	sort.Strings(results.LocalGlue)
+
+	// Sort and clean all of the lookup results
+	results.CFlareNS = cleanNS(cfns)
+	results.GoogleNS = cleanNS(goons)
+	results.CFlareA = cleanIPV6(cfa)
+	results.GoogleA = cleanIPV6(cfg)
+	results.LocalA = cleanIPV6(la)
 
 	// Resolve all of the Glue records on Google
 	for _, glu := range results.GoogleNS {
@@ -166,7 +180,7 @@ func Collect(cluster string) *Collection {
 	sort.Strings(results.CFlareGlue)
 
 	// Ensure we can dig against all the NS
-	if reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue) && reflect.DeepEqual(results.CFlareGlue, results.LocalGlue) {
+	if (reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue) && reflect.DeepEqual(results.CFlareGlue, results.LocalGlue)) || (len(results.GoogleNS) == 0 && len(results.LocalNS) != 0) {
 		for _, r := range results.LocalGlue {
 			w := &net.Resolver{
 				PreferGo: true,

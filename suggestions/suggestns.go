@@ -12,6 +12,16 @@ import (
 func SuggestNS(collection *collection.Collection, cluster *string) {
 	fmt.Printf("NS Record Suggestions\n--------------------------------\n")
 
+	if collection.PublicMatchNS && len(collection.LocalGlue) > 0 && collection.EndpointStatus[0] == false {
+		fmt.Println("The name servers resolve to private IPs, but we are not able to connect to them")
+		fmt.Println("Please try adjusting firewall rules or ensure the DNS servers are running")
+		fmt.Println("To confirm they are answering run the following commands:")
+		for _, i := range collection.LocalGlue {
+			fmt.Printf("\tdig ns %s @%s\n", strings.Join(strings.Split(*cluster, ".")[1:], "."), i)
+		}
+		os.Exit(1)
+	}
+
 	// Delegation completely failed
 	if collection.LocalMatchNS && collection.PublicMatchNS && len(collection.LocalNS) == 0 {
 		fmt.Printf("Unable to find a name server for subdomain %s\n", strings.Join(strings.Split(*cluster, ".")[1:], "."))
