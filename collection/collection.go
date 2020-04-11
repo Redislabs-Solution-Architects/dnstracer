@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/miekg/dns"
 )
 
 // Collection : a Struct returnin all the collected data from DNS servers
@@ -31,10 +33,28 @@ type Collection struct {
 	EndpointStatus  []bool
 }
 
+// Stolen from https://gist.github.com/sajal/23798b930edd51cb925ef15c6b237f13
+func noDNSPropQuery(fqdn, nameserver string) (in *dns.Msg, err error) {
+	if fqdn[len(fqdn)-1] != '.' {
+		fqdn = fqdn + "."
+	}
+	m := new(dns.Msg)
+	m.SetQuestion(fqdn, 2)
+	m.SetEdns0(4096, false)
+	m.RecursionDesired = false
+	udp := &dns.Client{Net: "udp", Timeout: time.Millisecond * time.Duration(2500)}
+	in, _, err = udp.Exchange(m, nameserver)
+	fmt.Println(in)
+	if err != nil {
+		fmt.Println("TODO: Good error message goes here")
+	}
+	return
+}
+
 func dnsDial(dnsServer string) func(context.Context, string, string) (net.Conn, error) {
 	return func(ctx context.Context, network, address string) (net.Conn, error) {
 		d := net.Dialer{
-			Timeout: time.Millisecond * time.Duration(10000),
+			Timeout: time.Millisecond * time.Duration(2500),
 		}
 		return d.DialContext(ctx, "udp", dnsServer)
 	}
@@ -86,7 +106,11 @@ func Collect(cluster string) *Collection {
 	la, _ := localResolv.LookupHost(context.Background(), cluster)
 	cfns, _ := cfResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	goons, _ := gooResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
-	localns, _ := localResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	localns, lerr := localResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	if lerr != nil {
+		fmt.Println("ERR: Failback")
+		noDNSPropQuery(strings.Join(strings.Split(cluster, ".")[1:], "."), "127.0.0.1:53")
+	}
 
 	results.CFlareNS = cleanNS(cfns)
 	results.GoogleNS = cleanNS(goons)
