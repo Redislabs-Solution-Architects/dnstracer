@@ -16,7 +16,7 @@ func main() {
 	flag.Parse()
 
 	coll := collection.Collect(*cluster)
-	results := rules.Check(coll, *dbg)
+	results := rules.Check(coll, *dbg, *suggest)
 
 	if *dbg {
 		fmt.Printf("--------------------------------\n")
@@ -29,7 +29,7 @@ func main() {
 	} else if *suggest {
 		suggestions.Suggest(coll, results, cluster)
 	} else {
-		fmt.Println("Error - run with -debug for more information")
+		fmt.Println("Error - run with -debug for more information or run with -suggest for hints on how to fix")
 
 	}
 }

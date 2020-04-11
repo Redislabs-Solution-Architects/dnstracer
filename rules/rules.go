@@ -25,7 +25,7 @@ func debugPrint(check string, result bool) {
 }
 
 // Check : Given the collected data return a Results Struct
-func Check(collection *collection.Collection, dbg bool) Results {
+func Check(collection *collection.Collection, dbg, suggest bool) Results {
 
 	results := Results{}
 
@@ -84,13 +84,19 @@ func Check(collection *collection.Collection, dbg bool) Results {
 	} else {
 		results.ResultA = false
 	}
-	if dbg {
+
+	// Show test results if suggest or debug
+	if dbg || suggest {
 		fmt.Printf("--------------------------------\n")
 		debugPrint("NS Record Test", results.ResultNS)
 		debugPrint("Glue Record Test", results.ResultGlue)
 		debugPrint("NS Access Test", results.ResultAccess)
 		debugPrint("A Record Test", results.ResultA)
 		fmt.Printf("--------------------------------\n")
+	}
+
+	// only print datastructure if debug is on
+	if dbg {
 		color.Cyan.Printf("Results Debug:\n%+v\n", results)
 	}
 

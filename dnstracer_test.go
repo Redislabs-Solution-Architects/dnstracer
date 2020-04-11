@@ -39,7 +39,7 @@ func TestCollection(t *testing.T) {
 // TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty
 func TestRulesAgainstEmptyCollection(t *testing.T) {
 	a := &collection.Collection{}
-	r := rules.Check(a, false)
+	r := rules.Check(a, false, false)
 	e := rules.Results{ResultA: false, ResultNS: false, ResultGlue: false, ResultAccess: false}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Empty collection works")
@@ -53,7 +53,7 @@ func TestRulesAgainstEmptyCollection(t *testing.T) {
 // TestRulesAgainstEmptyCollection : everything should return false if the Collection is empty
 func TestRulesAgainstFullCollection(t *testing.T) {
 	coll := validCollection
-	r := rules.Check(&coll, false)
+	r := rules.Check(&coll, false, false)
 	e := rules.Results{ResultA: true, ResultNS: true, ResultGlue: true, ResultAccess: true}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Full valid collection works")
@@ -69,7 +69,7 @@ func TestRulesAgainstFullCollection(t *testing.T) {
 func TestRulesAgainstMissingARecord(t *testing.T) {
 	coll := validCollection
 	coll.LocalA = nil
-	r := rules.Check(&coll, false)
+	r := rules.Check(&coll, false, false)
 	e := rules.Results{ResultA: false, ResultNS: true, ResultGlue: true, ResultAccess: true}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Missing A Record works")
@@ -85,7 +85,7 @@ func TestRulesAgainstMissingARecord(t *testing.T) {
 func TestRulesAgainstExtraARecord(t *testing.T) {
 	coll := validCollection
 	coll.LocalA = []string{"1.1.1.1", "2.2.2.2", "4.4.4.4"}
-	r := rules.Check(&coll, false)
+	r := rules.Check(&coll, false, false)
 	e := rules.Results{ResultA: false, ResultNS: true, ResultGlue: true, ResultAccess: true}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Extra A Record works")
@@ -101,7 +101,7 @@ func TestRulesAgainstExtraARecord(t *testing.T) {
 func TestRulesAgainstMismatchARecord(t *testing.T) {
 	coll := validCollection
 	coll.LocalA = []string{"1.1.1.1", "4.4.4.4"}
-	r := rules.Check(&coll, false)
+	r := rules.Check(&coll, false, false)
 	e := rules.Results{ResultA: false, ResultNS: true, ResultGlue: true, ResultAccess: true}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Extra A Record works")
@@ -119,7 +119,7 @@ func TestRulesAgainstMismatchARecord(t *testing.T) {
 func TestRulesAgainstMissingNSRecord(t *testing.T) {
 	coll := validCollection
 	coll.LocalNS = nil
-	r := rules.Check(&coll, false)
+	r := rules.Check(&coll, false, false)
 	e := rules.Results{ResultA: true, ResultNS: false, ResultGlue: false, ResultAccess: false}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Missing NS Record works")
@@ -135,7 +135,7 @@ func TestRulesAgainstMissingNSRecord(t *testing.T) {
 func TestRulesAgainstExtraNSRecord(t *testing.T) {
 	coll := validCollection
 	coll.LocalNS = append(coll.LocalNS, "ns4.example.com")
-	r := rules.Check(&coll, false)
+	r := rules.Check(&coll, false, false)
 	e := rules.Results{ResultA: true, ResultNS: false, ResultGlue: false, ResultAccess: false}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Extra NS Record works")
@@ -151,7 +151,7 @@ func TestRulesAgainstExtraNSRecord(t *testing.T) {
 func TestRulesAgainstMismatchNSRecord(t *testing.T) {
 	coll := validCollection
 	coll.LocalNS = []string{"ns1.example.com", "ns2.example.com"}
-	r := rules.Check(&coll, false)
+	r := rules.Check(&coll, false, false)
 	e := rules.Results{ResultA: true, ResultNS: false, ResultGlue: false, ResultAccess: false}
 	if reflect.DeepEqual(e, r) {
 		t.Log("Missing NS Record works")
