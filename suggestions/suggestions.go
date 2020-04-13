@@ -17,7 +17,7 @@ func Suggest(collection *collection.Collection, results rules.Results, cluster *
 		SuggestGlue(collection)
 	}
 	if results.ResultAccess != true {
-		SuggestAccess(collection)
+		SuggestAccess(collection, cluster)
 	}
 	if results.ResultA != true {
 		SuggestA(collection, cluster)
