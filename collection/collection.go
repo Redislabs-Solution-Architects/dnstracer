@@ -47,15 +47,16 @@ func noDNSPropQuery(fqdn, nameserver string) ([]string, []string, error) {
 	udp := &dns.Client{Net: "udp", Timeout: time.Millisecond * time.Duration(2500)}
 	in, _, err := udp.Exchange(m, nameserver)
 	if err != nil {
-		fmt.Println("TODO: Good error message goes here")
-	}
+		fmt.Println("Error:", fqdn, " ", err)
+	} else {
 
-	re := regexp.MustCompile(`^(?P<fqdn>\S+)\s+\d+\s+IN\s+A\s+(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
-	for _, i := range in.Extra {
-		res := re.FindStringSubmatch(i.String())
-		if len(res) > 0 {
-			glue = append(glue, res[2])
-			ns = append(ns, res[1])
+		re := regexp.MustCompile(`^(?P<fqdn>\S+)\s+\d+\s+IN\s+A\s+(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
+		for _, i := range in.Extra {
+			res := re.FindStringSubmatch(i.String())
+			if len(res) > 0 {
+				glue = append(glue, res[2])
+				ns = append(ns, res[1])
+			}
 		}
 	}
 	return ns, glue, err
