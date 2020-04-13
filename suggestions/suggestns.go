@@ -28,7 +28,9 @@ func SuggestNS(collection *collection.Collection, cluster *string) {
 		fmt.Printf("Please make sure that domain %s is delegating to %s\n",
 			strings.Join(strings.Split(*cluster, ".")[2:], "."),
 			strings.Join(strings.Split(*cluster, ".")[1:], "."))
-		fmt.Println("see https://github.com/Redislabs-Solution-Architects/dnstracer/troubleshooting/delegation.md")
+		fmt.Println("Use the following commands to troubleshoot:")
+		fmt.Printf("\tdig NS %s\n", strings.Join(strings.Split(*cluster, ".")[1:], "."))
+		fmt.Printf("\tdig NS %s\n", strings.Join(strings.Split(*cluster, ".")[2:], "."))
 		os.Exit(1)
 	}
 

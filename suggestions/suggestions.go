@@ -20,6 +20,6 @@ func Suggest(collection *collection.Collection, results rules.Results, cluster *
 		SuggestAccess(collection)
 	}
 	if results.ResultA != true {
-		SuggestA(collection)
+		SuggestA(collection, cluster)
 	}
 }
