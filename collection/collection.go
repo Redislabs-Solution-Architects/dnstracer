@@ -115,8 +115,19 @@ func Collect(cluster string) *Collection {
 	cfa, _ := cfResolv.LookupHost(context.Background(), cluster)
 	cfg, _ := gooResolv.LookupHost(context.Background(), cluster)
 	la, _ := localResolv.LookupHost(context.Background(), cluster)
-	cfns, _ := cfResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
-	goons, _ := gooResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	cfns, crr := cfResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	if crr != nil {
+		fmt.Println("cfborked", crr)
+		x, y, _ := noDNSPropQuery(strings.Join(strings.Split(cluster, ".")[1:], "."), "1.1.1.1:53")
+		fmt.Println(x, y)
+	}
+	goons, gerr := gooResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	if gerr != nil {
+		fmt.Println("googborked", gerr)
+		x, y, _ := noDNSPropQuery(strings.Join(strings.Split(cluster, ".")[1:], "."), "8.8.8.8:53")
+		fmt.Println(x, y)
+
+	}
 	localns, lerr := localResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	if lerr != nil {
 		// TODO: figure out a good way to find the resolver based on various OS's but probably not Windows
