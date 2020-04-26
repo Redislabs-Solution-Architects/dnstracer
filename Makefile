@@ -15,4 +15,4 @@ xcompile:
 	gox \
 		-os="darwin" \
 		-os="linux" \
-		-output="build/{{.Dir}}_$(VERSION)_{{.OS}}_{{.Arch}}/$(NAME)"
+		-output="build/$(NAME)_$(VERSION)_{{.OS}}_{{.Arch}}"
