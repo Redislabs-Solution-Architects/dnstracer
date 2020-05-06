@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"reflect"
 	"regexp"
 	"sort"
@@ -195,7 +196,8 @@ func Collect(cluster string) *Collection {
 			}
 		}
 	} else {
-		fmt.Println("WTF?")
+		fmt.Println("Unexpected Error occured - please re-run with the --debug")
+		os.Exit(1)
 	}
 
 	return (results)

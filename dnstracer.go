@@ -1,7 +1,8 @@
 package main
 
 import (
-	"flag"
+	"github.com/pborman/getopt/v2"
+
 	"fmt"
 	"os"
 
@@ -14,16 +15,18 @@ import (
 const Name = "dnstracer"
 
 // Version is the current version of this application.
-const Version = "0.0.1"
+const Version = "0.0.2"
 
 func main() {
-	endpoint := flag.String("endpoint", "", "The name of the redis endpoint eg: redis-10000.foo.example.com")
-	dbg := flag.Bool("debug", false, "Show debug information")
-	suggest := flag.Bool("suggest", false, "Suggest possible fixes")
-	flag.Parse()
 
-	if *endpoint == "" {
-		fmt.Println("Please set the endpoint name or run --help for more information")
+	helpFlag := getopt.BoolLong("help", 'h', "display help")
+	endpoint := getopt.StringLong("endpoint", 'e', "", "The name of the redis endpoint eg: redis-10000.foo.example.com")
+	dbg := getopt.BoolLong("debug", 'd', "Enable debug output")
+	suggest := getopt.BoolLong("suggest", 's', "Suggest possible fixes")
+	getopt.Parse()
+
+	if *helpFlag || *endpoint == "" {
+		getopt.PrintUsage(os.Stderr)
 		os.Exit(1)
 	}
 
