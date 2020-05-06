@@ -9,7 +9,7 @@ Head to the [Releases Page](https://github.com/Redislabs-Solution-Architects/dns
 ### Get Help
 
 ```
-$ ./build/dnstracer_0.0.1_linux_amd64  -h
+$ ./build/dnstracer_0.0.2_linux_amd64  -h
 Usage: dnstracer [-dhs] [-e value] [parameters ...]
  -d, --debug    Enable debug output
  -e, --endpoint=value
@@ -23,14 +23,14 @@ Usage: dnstracer [-dhs] [-e value] [parameters ...]
 ### Check a cluster we know is broken
 
 ```
-$ ./build/dnstracer_0.0.1_linux_amd64  -d redis-10002.azure1.mague.com
+$ ./build/dnstracer_0.0.2_linux_amd64  -d redis-10002.azure1.mague.com
 Error - run with -debug for more information or run with -suggest for hints on how to fix
 ```
 
 ### Check a cluster and provide some possible suggestions for fixes
 
 ```
-$ ./build/dnstracer_0.0.1_linux_amd64  -e redis-10002.azure1.mague.com --suggest
+$ ./build/dnstracer_0.0.2_linux_amd64  -e redis-10002.azure1.mague.com --suggest
 --------------------------------
 	      NS Record Test: OK
 	    Glue Record Test: OK
@@ -57,7 +57,7 @@ Please use the following commands to troubleshoot:
 ### If all else fails and you've found a new failure scenario I may have missed : run with debug and submit an issue
 
 ```
-$ ./build/dnstracer_0.0.1_linux_amd64  -e redis-10002.azure1.mague.com --debug
+$ ./build/dnstracer_0.0.2_linux_amd64  -e redis-10002.azure1.mague.com --debug
 --------------------------------
 	      NS Record Test: OK
 	    Glue Record Test: OK
