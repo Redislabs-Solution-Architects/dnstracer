@@ -71,3 +71,8 @@ Results Debug:
 {ResultA:true ResultNS:true ResultGlue:true ResultAccess:false}
 Error - run with -debug for more information or run with -suggest for hints on how to fix
 ```
+
+## Lookups Being performed
+
+![docs/lookups.png](docs/lookups.png)
+
