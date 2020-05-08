@@ -1,0 +1,44 @@
+digraph structs {
+    ranksep=0.75; 
+    #rankdir=LR; 
+    
+    node[shape=Mrecord,fontname=Arial,fontsize=10]
+
+
+    DNSTracer [label="{<f0>Program|<f1>Localhost}", color=Green];
+    DNSTracer2 [label="{<f0>Program|<f1>Localhost}", color=Green];
+
+    node1 [label="{<f0>Enterprise|<f1>IP1}", color=Red];
+    node2 [label="{<f0>Enterprise|<f1>IP2}", color=Red];
+    node3 [label="{<f0>Enterprise|<f1>IP3}", color=Red];
+
+    LocalResolver [label="{<f0>Local|<f1>IP: localhost}", color=Blue];
+    CloudflareResolver [label="{<f0>CloudFlare|<f1>IP: 1.1.1.1}", color=Blue];
+    GoogleResolver [label="{<f0>Google|<f1>IP: 8.8.8.8}", color=Blue];
+
+    LocalResolver2 [label="{<f0>Local|<f1>IP: localhost}", color=Blue];
+    CloudflareResolver2 [label="{<f0>CloudFlare|<f1>IP: 1.1.1.1}", color=Blue];
+    GoogleResolver2 [label="{<f0>Google|<f1>IP: 8.8.8.8}", color=Blue];
+
+    DNSTracer:f1 -> LocalResolver:f0 [label="Query NS", fontcolor=blue, color=blue]
+    DNSTracer:f1 -> CloudflareResolver:f0 [label="Query NS", fontcolor=blue, color=blue]
+    DNSTracer:f1 -> GoogleResolver:f0 [label="Query NS", fontcolor=blue, color=blue]
+
+    
+    LocalResolver:f1 -> LocalResolver2:f0 [label="Query Glue", fontcolor=blue, color=blue]
+    CloudflareResolver:f1 -> CloudflareResolver2:f0 [label="Query Glue", fontcolor=blue, color=blue]
+    GoogleResolver:f1 -> GoogleResolver2:f0 [label="Query Glue", fontcolor=blue, color=blue]
+    
+    LocalResolver2:f1 -> DNSTracer2:f0 [label="GLUE IPS", fontcolor=black, color=black]
+    CloudflareResolver2:f1 -> DNSTracer2:f0 [label="GLUE IPS", fontcolor=black, color=black]
+    GoogleResolver2:f1 -> DNSTracer2:f0 [label="GLUE IPS", fontcolor=black, color=black]
+    
+    LocalResolver2:f1 -> node1:f0 [label="Query A", fontcolor=red, color=red]
+    CloudflareResolver2:f1 -> node2:f0 [label="Query A", fontcolor=red, color=red]
+    GoogleResolver2:f1 -> node3:f0 [label="Query A", fontcolor=red, color=red]
+
+    DNSTracer2:f1 -> node1:f0 [label="Query NS", fontcolor=blue, color=blue]
+    DNSTracer2:f1 -> node2:f0 [label="Query NS", fontcolor=blue, color=blue]
+    DNSTracer2:f1 -> node3:f0 [label="Query NS", fontcolor=blue, color=blue]
+
+}
