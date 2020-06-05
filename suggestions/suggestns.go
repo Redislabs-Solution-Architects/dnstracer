@@ -13,7 +13,7 @@ func SuggestNS(collection *collection.Collection, cluster *string) {
 	fmt.Printf("NS Record Suggestions\n--------------------------------\n")
 
 	if collection.PublicMatchNS && len(collection.LocalGlue) > 0 && collection.EndpointStatus[0] == false {
-		fmt.Println("The name servers resolve to private IPs, but we are not able to connect to them")
+		fmt.Println("The name servers may resolve to private IPs or we are not able to connect to them")
 		fmt.Println("Please try adjusting firewall rules or ensure the DNS servers are running")
 		fmt.Println("To confirm they are answering run the following commands:")
 		for _, i := range collection.LocalGlue {

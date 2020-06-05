@@ -15,7 +15,7 @@ import (
 const Name = "dnstracer"
 
 // Version is the current version of this application.
-const Version = "0.0.2"
+const Version = "0.0.3"
 
 func main() {
 
@@ -44,7 +44,7 @@ func main() {
 	} else if *suggest {
 		suggestions.Suggest(coll, results, endpoint)
 	} else {
-		fmt.Println("Error - run with -debug for more information or run with -suggest for hints on how to fix")
+		fmt.Println("Error - run with --debug for more information or run with --suggest for hints on how to fix")
 
 	}
 }

@@ -24,7 +24,7 @@ Usage: dnstracer [-dhs] [-e value] [parameters ...]
 
 ```
 $ ./build/dnstracer_0.0.2_linux_amd64  -d redis-10002.azure1.mague.com
-Error - run with -debug for more information or run with -suggest for hints on how to fix
+Error - run with --debug for more information or run with --suggest for hints on how to fix
 ```
 
 ### Check a cluster and provide some possible suggestions for fixes
@@ -69,7 +69,7 @@ Results Debug:
 --------------------------------
 &{LocalA:[20.36.28.197] GoogleA:[20.36.28.197] CFlareA:[20.36.28.197] LocalNS:[ns1.azure1.mague.com. ns2.azure1.mague.com. ns3.azure1.mague.com.] GoogleNS:[ns1.azure1.mague.com. ns2.azure1.mague.com. ns3.azure1.mague.com.] CFlareNS:[ns1.azure1.mague.com. ns2.azure1.mague.com. ns3.azure1.mague.com.] LocalGlue:[20.36.28.197 40.65.114.126 52.250.9.35] GoogleGlue:[20.36.28.197 40.65.114.126 52.250.9.35] CFlareGlue:[20.36.28.197 40.65.114.126 52.250.9.35] PublicMatchA:true LocalMatchA:true PublicMatchNS:true LocalMatchNS:true PublicMatchGlue:true LocalMatchGlue:true EndpointStatus:[true false true]}
 {ResultA:true ResultNS:true ResultGlue:true ResultAccess:false}
-Error - run with -debug for more information or run with -suggest for hints on how to fix
+Error - run with --debug for more information or run with --suggest for hints on how to fix
 ```
 
 ## Lookups Being performed
