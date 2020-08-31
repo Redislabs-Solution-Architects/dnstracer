@@ -6,12 +6,8 @@ import (
 	"net"
 	"os"
 	"reflect"
-	"regexp"
 	"sort"
 	"strings"
-	"time"
-
-	"github.com/miekg/dns"
 )
 
 // Collection : a Struct returnin all the collected data from DNS servers
@@ -34,78 +30,22 @@ type Collection struct {
 	EndpointStatus  []bool
 }
 
-// Stolen from https://gist.github.com/sajal/23798b930edd51cb925ef15c6b237f13
-func noDNSPropQuery(fqdn, nameserver string) ([]string, []string, error) {
-	glue := []string{}
-	ns := []string{}
-	if fqdn[len(fqdn)-1] != '.' {
-		fqdn = fqdn + "."
-	}
-	m := new(dns.Msg)
-	m.SetQuestion(fqdn, 2)
-	m.SetEdns0(4096, false)
-	m.RecursionDesired = false
-	udp := &dns.Client{Net: "udp", Timeout: time.Millisecond * time.Duration(2500)}
-	in, _, err := udp.Exchange(m, nameserver)
-	if err != nil {
-		fmt.Println("Error:", fqdn, " ", err)
-	} else {
-
-		re := regexp.MustCompile(`^(?P<fqdn>\S+)\s+\d+\s+IN\s+A\s+(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
-		for _, i := range in.Extra {
-			res := re.FindStringSubmatch(i.String())
-			if len(res) > 0 {
-				glue = append(glue, res[2])
-				ns = append(ns, res[1])
-			}
-		}
-	}
-	return ns, glue, err
-}
-
-func dnsDial(dnsServer string) func(context.Context, string, string) (net.Conn, error) {
-	return func(ctx context.Context, network, address string) (net.Conn, error) {
-		d := net.Dialer{
-			Timeout: time.Millisecond * time.Duration(2500),
-		}
-		return d.DialContext(ctx, "udp", dnsServer)
-	}
-}
-
-// strip out any ipv6 IP addresses
-func cleanIPV6(l []string) []string {
-	var r []string
-	for _, i := range l {
-		matched, _ := regexp.MatchString(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`, i)
-		if matched {
-			r = append(r, i)
-		}
-	}
-	sort.Strings(r)
-	return (r)
-}
-
-// Sorts and removes all ipv6 address
-func cleanNS(l []*net.NS) []string {
-	var r []string
-	for _, i := range l {
-		r = append(r, i.Host)
-	}
-	sort.Strings(r)
-	return (r)
-
-}
-
 // Collect : grab all of the necessary information needed to make decisions
-func Collect(cluster string) *Collection {
+func Collect(cluster string, intOnly bool) *Collection {
+
+	extResolvers := []string{"1.1.1.1:53", "8.8.8.8:53"}
+
+	if intOnly {
+		extResolvers = getDNSConf()
+	}
 
 	cfResolv := &net.Resolver{
 		PreferGo: true,
-		Dial:     dnsDial("1.1.1.1:53"),
+		Dial:     dnsDial(extResolvers[0]),
 	}
 	gooResolv := &net.Resolver{
 		PreferGo: true,
-		Dial:     dnsDial("8.8.8.8:53"),
+		Dial:     dnsDial(extResolvers[1]),
 	}
 	localResolv := &net.Resolver{
 		PreferGo: true,

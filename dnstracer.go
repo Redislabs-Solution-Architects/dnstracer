@@ -22,6 +22,7 @@ func main() {
 	helpFlag := getopt.BoolLong("help", 'h', "display help")
 	endpoint := getopt.StringLong("endpoint", 'e', "", "The name of the redis endpoint eg: redis-10000.foo.example.com")
 	dbg := getopt.BoolLong("debug", 'd', "Enable debug output")
+	intOnly := getopt.BoolLong("internal", 'i', "Use only internal resolvers")
 	suggest := getopt.BoolLong("suggest", 's', "Suggest possible fixes")
 	getopt.Parse()
 
@@ -30,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	coll := collection.Collect(*endpoint)
+	coll := collection.Collect(*endpoint, *intOnly)
 	results := rules.Check(coll, *dbg, *suggest)
 
 	if *dbg {
