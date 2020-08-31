@@ -13,14 +13,14 @@ import (
 // Collection : a Struct returnin all the collected data from DNS servers
 type Collection struct {
 	LocalA          []string
-	GoogleA         []string
-	CFlareA         []string
+	DNS2A           []string
+	DNS1A           []string
 	LocalNS         []string
-	GoogleNS        []string
-	CFlareNS        []string
+	DNS2NS          []string
+	DNS1NS          []string
 	LocalGlue       []string
-	GoogleGlue      []string
-	CFlareGlue      []string
+	DNS2Glue        []string
+	DNS1Glue        []string
 	PublicMatchA    bool
 	LocalMatchA     bool
 	PublicMatchNS   bool
@@ -89,40 +89,40 @@ func Collect(cluster string, intOnly bool) *Collection {
 	sort.Strings(results.LocalGlue)
 
 	// Sort and clean all of the lookup results
-	results.CFlareNS = cleanNS(dns1ns)
-	results.GoogleNS = cleanNS(dns2ns)
-	results.CFlareA = cleanIPV6(dns1a)
-	results.GoogleA = cleanIPV6(dns2a)
+	results.DNS1NS = cleanNS(dns1ns)
+	results.DNS2NS = cleanNS(dns2ns)
+	results.DNS1A = cleanIPV6(dns1a)
+	results.DNS2A = cleanIPV6(dns2a)
 	results.LocalA = cleanIPV6(la)
 
-	// Resolve all of the Glue records on Google
-	for _, glu := range results.GoogleNS {
+	// Resolve all of the Glue records on DNS2
+	for _, glu := range results.DNS2NS {
 		q, err := dns2Resolv.LookupHost(context.Background(), glu)
 		if err != nil {
 			fmt.Println("ERR:", err)
 		}
 		q = cleanIPV6(q)
 		for _, w := range q {
-			results.GoogleGlue = append(results.GoogleGlue, w)
+			results.DNS2Glue = append(results.DNS2Glue, w)
 		}
 	}
-	sort.Strings(results.GoogleGlue)
+	sort.Strings(results.DNS2Glue)
 
 	// Resolve all of the Glue records on Cloudflare
-	for _, glu := range results.CFlareNS {
+	for _, glu := range results.DNS1NS {
 		q, err := dns1Resolv.LookupHost(context.Background(), glu)
 		if err != nil {
 			fmt.Println("ERR:", err)
 		}
 		q = cleanIPV6(q)
 		for _, w := range q {
-			results.CFlareGlue = append(results.CFlareGlue, w)
+			results.DNS1Glue = append(results.DNS1Glue, w)
 		}
 	}
-	sort.Strings(results.CFlareGlue)
+	sort.Strings(results.DNS1Glue)
 
 	// Ensure we can dig against all the NS
-	if (reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue) && reflect.DeepEqual(results.CFlareGlue, results.LocalGlue)) || (len(results.GoogleNS) == 0 && len(results.LocalNS) != 0) {
+	if (reflect.DeepEqual(results.DNS1Glue, results.DNS2Glue) && reflect.DeepEqual(results.DNS1Glue, results.LocalGlue)) || (len(results.DNS2NS) == 0 && len(results.LocalNS) != 0) {
 		for _, r := range results.LocalGlue {
 			w := &net.Resolver{
 				PreferGo: true,

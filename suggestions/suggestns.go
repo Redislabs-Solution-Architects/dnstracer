@@ -38,8 +38,8 @@ func SuggestNS(collection *collection.Collection, cluster *string) {
 	if len(collection.LocalNS) > 0 && (collection.LocalMatchNS != true || collection.PublicMatchNS != true) {
 		fmt.Printf("We get inconsistent answers for NS for domain %s\n", strings.Join(strings.Split(*cluster, ".")[1:], "."))
 		fmt.Printf("Local: %s\n", strings.Join(collection.LocalNS, ", "))
-		fmt.Printf("Google: %s\n", strings.Join(collection.GoogleNS, ", "))
-		fmt.Printf("Cloudflare: %s\n", strings.Join(collection.CFlareNS, ", "))
+		fmt.Printf("DNS2: %s\n", strings.Join(collection.DNS2NS, ", "))
+		fmt.Printf("Cloudflare: %s\n", strings.Join(collection.DNS1NS, ", "))
 		fmt.Println("see https://github.com/Redislabs-Solution-Architects/dnstracer/troubleshooting/nsmismatch.md")
 		os.Exit(1)
 

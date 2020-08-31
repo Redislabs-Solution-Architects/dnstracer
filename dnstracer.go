@@ -15,14 +15,14 @@ import (
 const Name = "dnstracer"
 
 // Version is the current version of this application.
-const Version = "0.0.3"
+const Version = "0.0.4"
 
 func main() {
 
 	helpFlag := getopt.BoolLong("help", 'h', "display help")
 	endpoint := getopt.StringLong("endpoint", 'e', "", "The name of the redis endpoint eg: redis-10000.foo.example.com")
 	dbg := getopt.BoolLong("debug", 'd', "Enable debug output")
-	intOnly := getopt.BoolLong("internal", 'i', "Use only internal resolvers")
+	intOnly := getopt.BoolLong("internal", 'i', "Use only internal resolvers (only on Linux)")
 	suggest := getopt.BoolLong("suggest", 's', "Suggest possible fixes")
 	getopt.Parse()
 
