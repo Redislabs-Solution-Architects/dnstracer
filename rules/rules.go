@@ -36,8 +36,8 @@ func Check(collection *collection.Collection, dbg, suggest bool) Results {
 	   Check to make sure there are at least 1 NS server
 	*/
 
-	collection.PublicMatchNS = reflect.DeepEqual(collection.CFlareNS, collection.GoogleNS)
-	collection.LocalMatchNS = reflect.DeepEqual(collection.CFlareNS, collection.LocalNS)
+	collection.PublicMatchNS = reflect.DeepEqual(collection.DNS1NS, collection.DNS2NS)
+	collection.LocalMatchNS = reflect.DeepEqual(collection.DNS1NS, collection.LocalNS)
 	if collection.PublicMatchNS && collection.LocalMatchNS && len(collection.LocalNS) > 0 {
 		results.ResultNS = true
 	} else {
@@ -49,8 +49,8 @@ func Check(collection *collection.Collection, dbg, suggest bool) Results {
 	   Check to make sure there the Glue record length matches the ns record length
 	*/
 
-	collection.PublicMatchGlue = reflect.DeepEqual(collection.CFlareGlue, collection.GoogleGlue)
-	collection.LocalMatchGlue = reflect.DeepEqual(collection.CFlareGlue, collection.LocalGlue)
+	collection.PublicMatchGlue = reflect.DeepEqual(collection.DNS1Glue, collection.DNS2Glue)
+	collection.LocalMatchGlue = reflect.DeepEqual(collection.DNS1Glue, collection.LocalGlue)
 
 	if collection.PublicMatchGlue && collection.LocalMatchGlue && (len(collection.LocalNS) == len(collection.LocalGlue)) && len(collection.LocalNS) > 0 {
 		results.ResultGlue = true
@@ -76,10 +76,10 @@ func Check(collection *collection.Collection, dbg, suggest bool) Results {
 	   Check that there is more than 1 A record
 	*/
 
-	collection.PublicMatchA = reflect.DeepEqual(collection.CFlareA, collection.GoogleA)
-	collection.LocalMatchA = reflect.DeepEqual(collection.CFlareA, collection.LocalA)
+	collection.PublicMatchA = reflect.DeepEqual(collection.DNS1A, collection.DNS2A)
+	collection.LocalMatchA = reflect.DeepEqual(collection.DNS1A, collection.LocalA)
 
-	if collection.PublicMatchA && collection.LocalMatchA && len(collection.LocalA) > 0 && (len(collection.LocalA) == len(collection.CFlareA)) {
+	if collection.PublicMatchA && collection.LocalMatchA && len(collection.LocalA) > 0 && (len(collection.LocalA) == len(collection.DNS1A)) {
 		results.ResultA = true
 	} else {
 		results.ResultA = false

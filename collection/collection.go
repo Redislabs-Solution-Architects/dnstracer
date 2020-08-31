@@ -6,25 +6,21 @@ import (
 	"net"
 	"os"
 	"reflect"
-	"regexp"
 	"sort"
 	"strings"
-	"time"
-
-	"github.com/miekg/dns"
 )
 
 // Collection : a Struct returnin all the collected data from DNS servers
 type Collection struct {
 	LocalA          []string
-	GoogleA         []string
-	CFlareA         []string
+	DNS2A           []string
+	DNS1A           []string
 	LocalNS         []string
-	GoogleNS        []string
-	CFlareNS        []string
+	DNS2NS          []string
+	DNS1NS          []string
 	LocalGlue       []string
-	GoogleGlue      []string
-	CFlareGlue      []string
+	DNS2Glue        []string
+	DNS1Glue        []string
 	PublicMatchA    bool
 	LocalMatchA     bool
 	PublicMatchNS   bool
@@ -34,78 +30,22 @@ type Collection struct {
 	EndpointStatus  []bool
 }
 
-// Stolen from https://gist.github.com/sajal/23798b930edd51cb925ef15c6b237f13
-func noDNSPropQuery(fqdn, nameserver string) ([]string, []string, error) {
-	glue := []string{}
-	ns := []string{}
-	if fqdn[len(fqdn)-1] != '.' {
-		fqdn = fqdn + "."
-	}
-	m := new(dns.Msg)
-	m.SetQuestion(fqdn, 2)
-	m.SetEdns0(4096, false)
-	m.RecursionDesired = false
-	udp := &dns.Client{Net: "udp", Timeout: time.Millisecond * time.Duration(2500)}
-	in, _, err := udp.Exchange(m, nameserver)
-	if err != nil {
-		fmt.Println("Error:", fqdn, " ", err)
-	} else {
-
-		re := regexp.MustCompile(`^(?P<fqdn>\S+)\s+\d+\s+IN\s+A\s+(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
-		for _, i := range in.Extra {
-			res := re.FindStringSubmatch(i.String())
-			if len(res) > 0 {
-				glue = append(glue, res[2])
-				ns = append(ns, res[1])
-			}
-		}
-	}
-	return ns, glue, err
-}
-
-func dnsDial(dnsServer string) func(context.Context, string, string) (net.Conn, error) {
-	return func(ctx context.Context, network, address string) (net.Conn, error) {
-		d := net.Dialer{
-			Timeout: time.Millisecond * time.Duration(2500),
-		}
-		return d.DialContext(ctx, "udp", dnsServer)
-	}
-}
-
-// strip out any ipv6 IP addresses
-func cleanIPV6(l []string) []string {
-	var r []string
-	for _, i := range l {
-		matched, _ := regexp.MatchString(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`, i)
-		if matched {
-			r = append(r, i)
-		}
-	}
-	sort.Strings(r)
-	return (r)
-}
-
-// Sorts and removes all ipv6 address
-func cleanNS(l []*net.NS) []string {
-	var r []string
-	for _, i := range l {
-		r = append(r, i.Host)
-	}
-	sort.Strings(r)
-	return (r)
-
-}
-
 // Collect : grab all of the necessary information needed to make decisions
-func Collect(cluster string) *Collection {
+func Collect(cluster string, intOnly bool) *Collection {
 
-	cfResolv := &net.Resolver{
-		PreferGo: true,
-		Dial:     dnsDial("1.1.1.1:53"),
+	extResolvers := []string{"1.1.1.1:53", "8.8.8.8:53"}
+
+	if intOnly {
+		extResolvers = getDNSConf()
 	}
-	gooResolv := &net.Resolver{
+
+	dns1Resolv := &net.Resolver{
 		PreferGo: true,
-		Dial:     dnsDial("8.8.8.8:53"),
+		Dial:     dnsDial(extResolvers[0]),
+	}
+	dns2Resolv := &net.Resolver{
+		PreferGo: true,
+		Dial:     dnsDial(extResolvers[1]),
 	}
 	localResolv := &net.Resolver{
 		PreferGo: true,
@@ -113,11 +53,11 @@ func Collect(cluster string) *Collection {
 
 	results := &Collection{}
 
-	cfa, _ := cfResolv.LookupHost(context.Background(), cluster)
-	cfg, _ := gooResolv.LookupHost(context.Background(), cluster)
+	dns1a, _ := dns1Resolv.LookupHost(context.Background(), cluster)
+	dns2a, _ := dns2Resolv.LookupHost(context.Background(), cluster)
 	la, _ := localResolv.LookupHost(context.Background(), cluster)
-	cfns, _ := cfResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
-	goons, _ := gooResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	dns1ns, _ := dns1Resolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	dns2ns, _ := dns2Resolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	localns, lerr := localResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	if lerr != nil {
 		// TODO: figure out a good way to find the resolver based on various OS's but probably not Windows
@@ -149,40 +89,40 @@ func Collect(cluster string) *Collection {
 	sort.Strings(results.LocalGlue)
 
 	// Sort and clean all of the lookup results
-	results.CFlareNS = cleanNS(cfns)
-	results.GoogleNS = cleanNS(goons)
-	results.CFlareA = cleanIPV6(cfa)
-	results.GoogleA = cleanIPV6(cfg)
+	results.DNS1NS = cleanNS(dns1ns)
+	results.DNS2NS = cleanNS(dns2ns)
+	results.DNS1A = cleanIPV6(dns1a)
+	results.DNS2A = cleanIPV6(dns2a)
 	results.LocalA = cleanIPV6(la)
 
-	// Resolve all of the Glue records on Google
-	for _, glu := range results.GoogleNS {
-		q, err := gooResolv.LookupHost(context.Background(), glu)
+	// Resolve all of the Glue records on DNS2
+	for _, glu := range results.DNS2NS {
+		q, err := dns2Resolv.LookupHost(context.Background(), glu)
 		if err != nil {
 			fmt.Println("ERR:", err)
 		}
 		q = cleanIPV6(q)
 		for _, w := range q {
-			results.GoogleGlue = append(results.GoogleGlue, w)
+			results.DNS2Glue = append(results.DNS2Glue, w)
 		}
 	}
-	sort.Strings(results.GoogleGlue)
+	sort.Strings(results.DNS2Glue)
 
 	// Resolve all of the Glue records on Cloudflare
-	for _, glu := range results.CFlareNS {
-		q, err := cfResolv.LookupHost(context.Background(), glu)
+	for _, glu := range results.DNS1NS {
+		q, err := dns1Resolv.LookupHost(context.Background(), glu)
 		if err != nil {
 			fmt.Println("ERR:", err)
 		}
 		q = cleanIPV6(q)
 		for _, w := range q {
-			results.CFlareGlue = append(results.CFlareGlue, w)
+			results.DNS1Glue = append(results.DNS1Glue, w)
 		}
 	}
-	sort.Strings(results.CFlareGlue)
+	sort.Strings(results.DNS1Glue)
 
 	// Ensure we can dig against all the NS
-	if (reflect.DeepEqual(results.CFlareGlue, results.GoogleGlue) && reflect.DeepEqual(results.CFlareGlue, results.LocalGlue)) || (len(results.GoogleNS) == 0 && len(results.LocalNS) != 0) {
+	if (reflect.DeepEqual(results.DNS1Glue, results.DNS2Glue) && reflect.DeepEqual(results.DNS1Glue, results.LocalGlue)) || (len(results.DNS2NS) == 0 && len(results.LocalNS) != 0) {
 		for _, r := range results.LocalGlue {
 			w := &net.Resolver{
 				PreferGo: true,
