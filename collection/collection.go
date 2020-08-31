@@ -39,11 +39,11 @@ func Collect(cluster string, intOnly bool) *Collection {
 		extResolvers = getDNSConf()
 	}
 
-	cfResolv := &net.Resolver{
+	dns1Resolv := &net.Resolver{
 		PreferGo: true,
 		Dial:     dnsDial(extResolvers[0]),
 	}
-	gooResolv := &net.Resolver{
+	dns2Resolv := &net.Resolver{
 		PreferGo: true,
 		Dial:     dnsDial(extResolvers[1]),
 	}
@@ -53,11 +53,11 @@ func Collect(cluster string, intOnly bool) *Collection {
 
 	results := &Collection{}
 
-	cfa, _ := cfResolv.LookupHost(context.Background(), cluster)
-	cfg, _ := gooResolv.LookupHost(context.Background(), cluster)
+	dns1a, _ := dns1Resolv.LookupHost(context.Background(), cluster)
+	dns2a, _ := dns2Resolv.LookupHost(context.Background(), cluster)
 	la, _ := localResolv.LookupHost(context.Background(), cluster)
-	cfns, _ := cfResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
-	goons, _ := gooResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	dns1ns, _ := dns1Resolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
+	dns2ns, _ := dns2Resolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	localns, lerr := localResolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[1:], "."))
 	if lerr != nil {
 		// TODO: figure out a good way to find the resolver based on various OS's but probably not Windows
@@ -89,15 +89,15 @@ func Collect(cluster string, intOnly bool) *Collection {
 	sort.Strings(results.LocalGlue)
 
 	// Sort and clean all of the lookup results
-	results.CFlareNS = cleanNS(cfns)
-	results.GoogleNS = cleanNS(goons)
-	results.CFlareA = cleanIPV6(cfa)
-	results.GoogleA = cleanIPV6(cfg)
+	results.CFlareNS = cleanNS(dns1ns)
+	results.GoogleNS = cleanNS(dns2ns)
+	results.CFlareA = cleanIPV6(dns1a)
+	results.GoogleA = cleanIPV6(dns2a)
 	results.LocalA = cleanIPV6(la)
 
 	// Resolve all of the Glue records on Google
 	for _, glu := range results.GoogleNS {
-		q, err := gooResolv.LookupHost(context.Background(), glu)
+		q, err := dns2Resolv.LookupHost(context.Background(), glu)
 		if err != nil {
 			fmt.Println("ERR:", err)
 		}
@@ -110,7 +110,7 @@ func Collect(cluster string, intOnly bool) *Collection {
 
 	// Resolve all of the Glue records on Cloudflare
 	for _, glu := range results.CFlareNS {
-		q, err := cfResolv.LookupHost(context.Background(), glu)
+		q, err := dns1Resolv.LookupHost(context.Background(), glu)
 		if err != nil {
 			fmt.Println("ERR:", err)
 		}
