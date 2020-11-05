@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/miekg/dns"
@@ -94,4 +95,23 @@ func dnsDial(dnsServer string) func(context.Context, string, string) (net.Conn, 
 		}
 		return d.DialContext(ctx, "udp", dnsServer)
 	}
+}
+
+// digSOA function
+
+func matchSOA(dnsServer, domain string) bool {
+	r := false
+	c := new(dns.Client)
+	m := new(dns.Msg)
+	m.SetQuestion(fmt.Sprintf("%s.", domain), dns.TypeSOA)
+	soa, _, _ := c.Exchange(m, dnsServer)
+	if len(soa.Answer) > 0 {
+		rr := strings.Split(soa.Answer[0].String(), "\t")
+		ns := strings.Split(rr[4], " ")[0]
+		if fmt.Sprintf("ns.%s.", domain) == ns {
+			r = true
+		}
+	}
+	return r
+
 }

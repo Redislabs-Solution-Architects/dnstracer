@@ -21,6 +21,7 @@ type Collection struct {
 	LocalGlue       []string
 	DNS2Glue        []string
 	DNS1Glue        []string
+	SOAMatch        bool
 	PublicMatchA    bool
 	LocalMatchA     bool
 	PublicMatchNS   bool
@@ -139,6 +140,11 @@ func Collect(cluster string, intOnly bool) *Collection {
 		fmt.Println("Unexpected Error occured - please re-run with the --debug")
 		os.Exit(1)
 	}
+
+	// Check to see if the SOA record proves the DNS name matches the cluster name
+	results.SOAMatch = matchSOA(
+		fmt.Sprintf("%s:53", results.LocalNS[0]),
+		strings.Join(strings.Split(cluster, ".")[1:], "."))
 
 	return (results)
 }

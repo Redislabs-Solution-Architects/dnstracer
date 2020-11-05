@@ -15,7 +15,7 @@ import (
 const Name = "dnstracer"
 
 // Version is the current version of this application.
-const Version = "0.0.4"
+const Version = "0.0.5"
 
 func main() {
 
@@ -40,7 +40,7 @@ func main() {
 		fmt.Printf("%+v\n", results)
 	}
 
-	if results.ResultA && results.ResultGlue && results.ResultNS && results.ResultAccess {
+	if results.ResultA && results.ResultGlue && results.ResultNS && results.ResultAccess && results.ResultSOAMatch {
 		fmt.Println("OK")
 	} else if *suggest {
 		suggestions.Suggest(coll, results, endpoint)

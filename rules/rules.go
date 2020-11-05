@@ -10,10 +10,11 @@ import (
 
 // Results : Returns information about all fo the checks performed
 type Results struct {
-	ResultA      bool
-	ResultNS     bool
-	ResultGlue   bool
-	ResultAccess bool
+	ResultA        bool
+	ResultNS       bool
+	ResultGlue     bool
+	ResultAccess   bool
+	ResultSOAMatch bool
 }
 
 func debugPrint(check string, result bool) {
@@ -85,12 +86,16 @@ func Check(collection *collection.Collection, dbg, suggest bool) Results {
 		results.ResultA = false
 	}
 
+	// check to make sure the SOA records match the domain name we expect
+	results.ResultSOAMatch = collection.SOAMatch
+
 	// Show test results if suggest or debug
 	if dbg || suggest {
 		fmt.Printf("--------------------------------\n")
 		debugPrint("NS Record Test", results.ResultNS)
 		debugPrint("Glue Record Test", results.ResultGlue)
 		debugPrint("NS Access Test", results.ResultAccess)
+		debugPrint("SOA Match Test", results.ResultSOAMatch)
 		debugPrint("A Record Test", results.ResultA)
 		fmt.Printf("--------------------------------\n")
 	}

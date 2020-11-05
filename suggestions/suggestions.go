@@ -19,6 +19,9 @@ func Suggest(collection *collection.Collection, results rules.Results, cluster *
 	if results.ResultAccess != true {
 		SuggestAccess(collection, cluster)
 	}
+	if results.ResultSOAMatch != true {
+		SuggestSOA(collection, cluster)
+	}
 	if results.ResultA != true {
 		SuggestA(collection, cluster)
 	}
