@@ -1,5 +1,5 @@
 digraph structs {
-    ranksep=0.75; 
+    ranksep=0.50; 
     #rankdir=LR; 
     
     node[shape=Mrecord,fontname=Arial,fontsize=10]
@@ -40,5 +40,7 @@ digraph structs {
     DNSTracer2:f1 -> node1:f0 [label="Query NS", fontcolor=blue, color=blue]
     DNSTracer2:f1 -> node2:f0 [label="Query NS", fontcolor=blue, color=blue]
     DNSTracer2:f1 -> node3:f0 [label="Query NS", fontcolor=blue, color=blue]
+
+    DNSTracer2:f1 -> node1:f0 [label="Match SOA", fontcolor=darkgreen, color=darkgreen]
 
 }
