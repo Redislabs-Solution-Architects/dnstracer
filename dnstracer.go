@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Redislabs-Solution-Architects/dnstracer/collection"
 	"github.com/Redislabs-Solution-Architects/dnstracer/rules"
@@ -15,7 +16,7 @@ import (
 const Name = "dnstracer"
 
 // Version is the current version of this application.
-const Version = "0.0.5"
+const Version = "0.0.6"
 
 func main() {
 
@@ -28,6 +29,11 @@ func main() {
 
 	if *helpFlag || *endpoint == "" {
 		getopt.PrintUsage(os.Stderr)
+		os.Exit(1)
+	}
+
+	if !strings.HasPrefix(strings.ToUpper(*endpoint), "REDIS") {
+		fmt.Println("Endpoint name needs to start with redis.\nAn endpoint must already be created to test")
 		os.Exit(1)
 	}
 
