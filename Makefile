@@ -10,9 +10,4 @@ test:
 	go vet $(TEST)
 
 xcompile:
-	@rm -rf build/
-	@mkdir -p build
-	gox \
-		-os="darwin" \
-		-os="linux" \
-		-output="build/$(NAME)_$(VERSION)_{{.OS}}_{{.Arch}}"
+	goreleaser --snapshot --skip-publish --rm-dist
