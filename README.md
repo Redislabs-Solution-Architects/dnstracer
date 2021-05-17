@@ -2,6 +2,9 @@
 
 A tool to automate troubleshooting DNS issues for delegated zones
 
+![Go](https://github.com/Redislabs-Solution-Architects/dnstracer/actions/workflows/go.yml/badge.svg)
+![Release](https://github.com/Redislabs-Solution-Architects/dnstracer/actions/workflows/goreleaser.yml/badge.svg)
+
 ## Usage
 
 Head to the [Releases Page](https://github.com/Redislabs-Solution-Architects/dnstracer/releases) and download the release for either Darwin(Mac) or Linux
