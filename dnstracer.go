@@ -16,7 +16,7 @@ import (
 const Name = "dnstracer"
 
 // Version is the current version of this application.
-const Version = "0.0.6"
+const Version = "0.0.8"
 
 func main() {
 
