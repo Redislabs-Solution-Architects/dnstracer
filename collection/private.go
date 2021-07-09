@@ -14,7 +14,6 @@ func ScanValidIPs(a ...[]string) bool {
 			}
 		}
 	}
-	fmt.Println(res)
 	return res
 }
 

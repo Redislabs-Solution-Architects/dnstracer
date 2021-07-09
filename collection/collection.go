@@ -3,6 +3,7 @@ package collection
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"reflect"
@@ -53,6 +54,14 @@ func Collect(cluster string, intOnly bool) *Collection {
 	}
 
 	results := &Collection{}
+
+	// Check upstream NS server to make sure they are good - die if they contain private IPs
+	usns, _ := dns1Resolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[2:], "."))
+
+	_, y, _ := noDNSPropQuery(strings.Join(strings.Split(cluster, ".")[1:], "."), fmt.Sprintf("%s:53", cleanNS(usns)[0]))
+	if !ScanValidIPs(y) {
+		log.Fatal("The glue records: ", y, "contain a private or invalid IP address")
+	}
 
 	dns1a, _ := dns1Resolv.LookupHost(context.Background(), cluster)
 	dns2a, _ := dns2Resolv.LookupHost(context.Background(), cluster)
@@ -142,9 +151,11 @@ func Collect(cluster string, intOnly bool) *Collection {
 	}
 
 	// Check to see if the SOA record proves the DNS name matches the cluster name
-	results.SOAMatch = matchSOA(
-		fmt.Sprintf("%s:53", results.LocalNS[0]),
-		strings.Join(strings.Split(cluster, ".")[1:], "."))
+	if len(results.DNS1A) > 0 {
+		results.SOAMatch = matchSOA(
+			fmt.Sprintf("%s:53", results.LocalNS[0]),
+			strings.Join(strings.Split(cluster, ".")[1:], "."))
+	}
 
 	return (results)
 }
