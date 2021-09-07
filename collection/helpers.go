@@ -104,7 +104,10 @@ func matchSOA(dnsServer, domain string) bool {
 	c := new(dns.Client)
 	m := new(dns.Msg)
 	m.SetQuestion(fmt.Sprintf("%s.", domain), dns.TypeSOA)
-	soa, _, _ := c.Exchange(m, dnsServer)
+	soa, _, err := c.Exchange(m, dnsServer)
+	if err != nil {
+		log.Fatal("Unable to determine the SOA record for: ", domain, " from ", dnsServer)
+	}
 	if len(soa.Answer) > 0 {
 		rr := strings.Split(soa.Answer[0].String(), "\t")
 		ns := strings.Split(rr[4], " ")[0]
