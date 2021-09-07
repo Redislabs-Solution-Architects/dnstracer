@@ -58,6 +58,10 @@ func Collect(cluster string, intOnly bool) *Collection {
 	// Check upstream NS server to make sure they are good - die if they contain private IPs
 	usns, _ := dns1Resolv.LookupNS(context.Background(), strings.Join(strings.Split(cluster, ".")[2:], "."))
 
+	if len(usns) < 1 {
+		log.Fatal("Unable to determine NS records for ", strings.Join(strings.Split(cluster, ".")[2:], "."))
+	}
+
 	_, y, _ := noDNSPropQuery(strings.Join(strings.Split(cluster, ".")[1:], "."), fmt.Sprintf("%s:53", cleanNS(usns)[0]))
 	if !ScanValidIPs(y) {
 		log.Fatal("The glue records: ", y, "contain a private or invalid IP address")
