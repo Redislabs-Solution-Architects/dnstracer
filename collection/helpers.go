@@ -106,7 +106,7 @@ func matchSOA(dnsServer, domain string) bool {
 	m.SetQuestion(fmt.Sprintf("%s.", domain), dns.TypeSOA)
 	soa, _, err := c.Exchange(m, dnsServer)
 	if err != nil {
-		log.Fatal("Unable to determine the SOA record for: ", domain, " from ", dnsServer)
+		log.Fatal("Unable to determine the SOA record for: ", domain, " from ", dnsServer, " Error: ", err, "\nIf this is a timeout error check your firewall to make sure you can access the DNS server externally")
 	}
 	if len(soa.Answer) > 0 {
 		rr := strings.Split(soa.Answer[0].String(), "\t")
