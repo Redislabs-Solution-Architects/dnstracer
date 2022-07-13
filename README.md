@@ -37,7 +37,7 @@ When the Redis Enterprise servers are *not* publicly available use the internal 
 ### Check a cluster we know is broken
 
 ```
-$ ./dnstracer  -d redis-10002.azure1.mague.com
+$ ./dnstracer  -e redis-10002.azure1.mague.com
 Error - run with --debug for more information or run with --suggest for hints on how to fix
 ```
 
